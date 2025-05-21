@@ -1,0 +1,27 @@
+- name: "HTH | Samba | Create shares directory"
+  ansible.builtin.file:
+    path: "{{ samba_shares_dir_path }}"
+    state: directory
+    owner: "root"
+    group: "root"
+    mode: "0755"
+
+- name: "HTH | Samba | Create shares config file"
+  ansible.builtin.file:
+    path: "{{ samba_shares_config_path }}"
+    state: touch
+    owner: "root"
+    group: "root"
+    mode: "0644"
+
+- name: "HTH | Samba | Include master shares config file"
+  ansible.builtin.lineinfile:
+    path: "/etc/samba/smb.conf"
+    regexp: "^include = {{ samba_shares_config_path }}"
+    line: "include = {{ samba_shares_config_path }}"
+
+- name: "HTH | Samba | Create individual share"
+  ansible.builtin.include_tasks: share.yml
+  loop: "{{ samba.shares }}"
+  loop_control:
+    loop_var: share

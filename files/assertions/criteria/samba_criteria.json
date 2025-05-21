@@ -1,0 +1,105 @@
+{
+    "title": "samba",
+    "description": "Schema for validating Samba information",
+    "type": "object",
+    "properties":
+    {
+        "remove":
+        {
+            "type": "boolean"
+        },
+        "users":
+        {
+            "type": "array",
+            "items":
+            {
+                "type": "object",
+                "properties":
+                {
+                    "name":
+                    {
+                        "$ref": "#/definitions/non-empty-string"
+                    },
+                    "password_var":
+                    {
+                        "$ref": "#/definitions/non-empty-string"
+                    }
+                },
+                "required":
+                [
+                    "name",
+                    "password_var"
+                ]
+            }
+        },
+        "shares":
+        {
+            "type": "array",
+            "items":
+            {
+                "type": "object",
+                "properties":
+                {
+                    "remove":
+                    {
+                        "type": "boolean"
+                    },
+                    "label":
+                    {
+                        "$ref": "#/definitions/non-empty-string"
+                    },
+                    "path":
+                    {
+                        "$ref": "#/definitions/non-empty-string"
+                    },
+                    "comment":
+                    {
+                        "$ref": "#/definitions/non-empty-string"
+                    },
+                    "browsable":
+                    {
+                        "type": "boolean"
+                    },
+                    "writable":
+                    {
+                        "type": "boolean"
+                    },
+                    "read_only":
+                    {
+                        "type": "boolean"
+                    },
+                    "guests":
+                    {
+                        "type": "boolean"
+                    },
+                    "users":
+                    {
+                        "$ref": "#/definitions/non-empty-string-array"
+                    }
+                },
+                "required":
+                [
+                    "label",
+                    "path"
+                ]
+            }
+        }
+    },
+    "definitions":
+    {
+        "non-empty-string":
+        {
+            "type": "string",
+            "minLength": 1
+        },
+        "non-empty-string-array":
+        {
+            "type": "array",
+            "minItems": 1,
+            "items":
+            {
+                "$ref": "#/definitions/non-empty-string"
+            }
+        }
+    }
+}

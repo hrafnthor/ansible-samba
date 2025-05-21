@@ -1,0 +1,30 @@
+
+- include_vars: "{{ ansible_os_family }}.yml"
+  tags: always
+
+- name: "HTH | Samba | Assert inputs"
+  ansible.builtin.import_tasks: assert.yml
+  run_once: yes
+  delegate_to: localhost
+
+- name: "HTH | Samba | Install for Debian"
+  ansible.builtin.apt:
+    state: present
+    name:
+      - samba
+      - samba-common
+  when: ansible_os_family == 'Debian'
+
+- name: "HTH | Samba | Configure users"
+  ansible.builtin.include_tasks: users.yml
+  when: samba.users is defined
+
+- name: "HTH | Samba | Create shares"
+  ansible.builtin.include_tasks: shares.yml
+  when: samba.shares is defined
+
+- name: "HTH | Samba | Start daemon"
+  ansible.builtin.service:
+    name: "{{ samba_daemon }}"
+    state: started
+    enabled: true

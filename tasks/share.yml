@@ -1,0 +1,86 @@
+# -----------------------------------------------------------------------------
+# This file contains actions for creating an individual Samba share file.
+#
+# It expects a variable 'share' to exist which must contain properties 'label' 
+# and 'path'.
+# -----------------------------------------------------------------------------
+
+- name: "HTH | Samba | Set config file path"
+  ansible.builtin.set_fact:
+    samba_share_config_file_path: "{{ samba_shares_dir_path }}/{{ share.label }}.smb.conf"
+
+- name: "HTH | Samba | Manage config file existence"
+  ansible.builtin.file:
+    path: "{{ samba_share_config_file_path }}"
+    state: "{{ 'absent' if share.remove is defined and share.remove else 'touch' }}"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+
+- name: "HTH | Samba | Set share label"
+  ansible.builtin.lineinfile:
+    path: "{{ samba_share_config_file_path }}"
+    regexp: "^([\\w+])"
+    line: "[{{ share.label }}]"
+  when:
+    - share.remove is undefined or not share.remove
+
+- name: "HTH | Samba | Set share path"
+  ansible.builtin.lineinfile:
+    path: "{{ samba_share_config_file_path }}"
+    regexp: "^path ="
+    line: "path = {{ share.path }}"
+  when:
+    - share.remove is undefined or not share.remove
+
+- name: "HTH | Samba | Set share writable"
+  ansible.builtin.lineinfile:
+    path: "{{ samba_share_config_file_path }}"
+    regexp: "^writable ="
+    line: "writable = {{ 'yes' if share.writable is defined and share.writable else 'no' }}"
+    state: "{{ 'absent' if share.writable is undefined else 'present' }}"
+  when:
+    - share.remove is undefined or not share.remove
+
+- name: "HTH | Samba | Set share read only"
+  ansible.builtin.lineinfile:
+    path: "{{ samba_share_config_file_path }}"
+    regexp: "^read only ="
+    line: "read only = {{ 'yes' if share.read_only is defined and share.read_only else 'no' }}"
+    state: "{{ 'absent' if share.read_only is undefined else 'present' }}"
+  when:
+    - share.remove is undefined or not share.remove
+
+- name: "HTH | Samba | Make share browsable"
+  ansible.builtin.lineinfile:
+    path: "{{ samba_share_config_file_path }}"
+    regexp: "^browsable ="
+    line: "browsable = {{ 'yes' if share.browsable is defined and share.browsable else 'no' }}"
+    state: "{{ 'absent' if share.browsable is undefined else 'present' }}"
+  when:
+    - share.remove is undefined or not share.remove
+
+- name: "HTH | Samba | Allow guest access"
+  ansible.builtin.lineinfile:
+    path: "{{ samba_share_config_file_path }}"
+    regexp: "^guest ok ="
+    line: "guest ok = {{ 'yes' if share.guests is defined and share.guests else 'no' }}"
+    state: "{{ 'absent' if share.guests is undefined else 'present' }}"
+  when:
+    - share.remove is undefined or not share.remove
+
+- name: "HTH | Samba | Configure allowed users"
+  ansible.builtin.lineinfile:
+    path: "{{ samba_share_config_file_path }}"
+    regexp: "^valid users ="
+    line: "valid users = {{ ['@'] | product(share.users) | map('join') | list | join(' ') }}"
+    state: "{{ 'absent' if share.users is undefined else 'present' }}"
+  when:
+    - share.remove is undefined or not share.remove
+
+- name: "HTH | Samba | Configure share inclusion"
+  ansible.builtin.lineinfile:
+    path: "{{ samba_shares_config_path }}"
+    regexp: "^include = {{ samba_share_config_file_path }}"
+    line: "include = {{ samba_share_config_file_path }}"
+    state: "{{ 'absent' if share.remove is defined and share.remove else 'present' }}"

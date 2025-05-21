@@ -1,0 +1,29 @@
+- name: "HTH | Samba | Validate 'samba' input"
+  ansible.builtin.assert:
+    that:
+      - samba is defined
+
+- name: "HTH | Samba | Validate 'samba' schema"
+  ansible.utils.validate:
+    data: "{{ samba }}"
+    criteria: "{{ lookup('file', 'assertions/criteria/samba_criteria.json') | from_json }}"
+    engine: ansible.utils.jsonschema
+  run_once: yes
+  delegate_to: localhost
+
+- name: "HTH | Samba | Extract share labels"
+  ansible.builtin.set_fact:
+    share_labels: "{{ samba.shares | map(attribute='label') | list }}"
+  when: samba.shares is defined
+
+- name: "HTH | Samba | Reduce label list to unique values"
+  ansible.builtin.set_fact:
+    unique_share_labels: "{{ share_labels | unique }}"
+  when: samba.shares is defined
+
+- name: "HTH | Samba | Fail if not all labels are unique"
+  ansible.builtin.fail:
+    msg: "Duplicate share labels found: {{ share_labels }}!"
+  when:
+    - samva.shares is defined
+    - share_labels | length != unique_share_labels | length

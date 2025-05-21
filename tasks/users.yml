@@ -1,0 +1,23 @@
+# -----------------------------------------------------------------------------
+#
+# -----------------------------------------------------------------------------
+
+- name: "HTH | Samba | Create 'smbusers' group"
+  ansible.builtin.group:
+    name: smbusers
+    state: present
+
+- name: "HTH | Samba | Lookup currently configured users"
+  command: /usr/bin/pdbedit -L
+  register: pdb_users
+
+- name: "HTH | Samba | Configure user password"
+  ansible.builtin.command:
+    cmd: "/usr/bin/smbpasswd -s -a {{ user.name }}"
+    stdin: |
+      {{ lookup('vars', user.password_var) }}
+      {{ lookup('vars', user.password_var) }}
+  when: not (pdb_users.stdout_lines | select('match', '^' + user.name + ':') | list)
+  loop: "{{ samba.users }}"
+  loop_control:
+    loop_var: user

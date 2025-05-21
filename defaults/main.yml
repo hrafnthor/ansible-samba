@@ -1,0 +1,5 @@
+# The default location where the Samba shares config file will be located and linked to.
+samba_shares_config_path: "/etc/samba/shares/shares.smb.conf"
+
+# The default location where each Samba share definition will be placed.
+samba_shares_dir_path: "/etc/samba/shares"
