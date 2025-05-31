@@ -20,7 +20,7 @@
 - name: "HTH | Samba | Set share label"
   ansible.builtin.lineinfile:
     path: "{{ samba_share_config_file_path }}"
-    regexp: "^([\\w+])"
+    regexp: "^(\\[\\w+\\])"
     line: "[{{ share.label }}]"
   when:
     - share.remove is undefined or not share.remove
